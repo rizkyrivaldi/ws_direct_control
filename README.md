@@ -70,6 +70,7 @@ pip install --user -U empy pyros-genmsg setuptools
 ## Setup Micro XRCE-DDS Agent&Client
 Source : [ros2_comm documentation](https://docs.px4.io/main/en/ros/ros2_comm.html)
 
+```
 cd ~/
 git clone https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
 cd Micro-XRCE-DDS-Agent
@@ -78,34 +79,44 @@ cd build
 cmake ..
 make
 sudo make install
+```
 
 ## Install dependency PX4-Autopilot dari githubnya
+```
 cd ~/
 git clone https://github.com/PX4/PX4-Autopilot.git --recursive
 bash ./PX4-Autopilot/Tools/setup/ubuntu.sh
+```
 
 ## Install gazebo classic, timpa gazebo fortress yang udah keinstall dari ros2
-Source: https://docs.px4.io/main/en/sim_gazebo_classic/
+Source: [px4 gazebo classic documentation](https://docs.px4.io/main/en/sim_gazebo_classic/)
 
+```
 sudo apt install aptitude
 sudo aptitude install gazebo libgazebo11 libgazebo-dev
+```
 
 ## Compile PX4 Autopilot
+```
 cd ~/PX4-Autopilot
 pip uninstall em
 pip uninstall empy
 sudo apt-get install libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly -y
 DONT_RUN=1 make px4_sitl_default gazebo
+```
 
 ## Install Colcon (seperti cmake)
-Source: https://colcon.readthedocs.io/en/released/user/installation.html
+Source: [colcon documentation](https://colcon.readthedocs.io/en/released/user/installation.html)
 
+```
 sudo sh -c 'echo "deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main `lsb_release -cs` main" > /etc/apt/sources.list.d/ros2-latest.list'
 curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 sudo apt update
 sudo apt install python3-colcon-common-extensions
+```
 
 ## Setup contoh listener ke topic uORB
+```
 mkdir -p ~/ws_sensor_combined/src/
 cd ~/ws_sensor_combined/src/
 git clone https://github.com/PX4/px4_msgs.git
@@ -113,10 +124,12 @@ git clone https://github.com/PX4/px4_ros_com.git
 cd ..
 source /opt/ros/humble/setup.bash
 colcon build
+```
 
 ## Setup QGroundControl (untuk manual control)
-Source: https://docs.qgroundcontrol.com/master/en/getting_started/download_and_install.html
+Source: [qgroundcontrol documentation](https://docs.qgroundcontrol.com/master/en/getting_started/download_and_install.html)
 
+```
 cd ~/
 mkdir ./QGroundControl/
 cd ./QGroundControl/
@@ -126,13 +139,20 @@ sudo apt install libqt5gui5 -y
 sudo apt install libfuse2 -y
 wget https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl.AppImage
 chmod +x ./QGroundControl.AppImage
+```
 
 # RUN simulation dengan listen ke topic sensor combined
-## TERMINAL PERTAMA
+### TERMINAL PERTAMA
+
+Menjalankan MicroXRCEAgent sebagai jembatan antara px4 dengan ros2
+```
 sudo ldconfig /usr/local/lib/
 MicroXRCEAgent udp4 -p 8888 # Start agent
+```
 
-## TERMINAL KEDUA
+### TERMINAL KEDUA
+
+Menjalankan simulasi px4
 ```
 cd ~/PX4-Autopilot
 make px4_sitl_default gazebo-classic
@@ -142,12 +162,20 @@ Alternatif
 make px4_sitl_default gazebo-classic_iris__baylands
 ```
 
-## TERMINAL KETIGA (untuk testing listener)
+### TERMINAL KETIGA
+
+Pengujian node listener
+```
 cd ~/ws_sensor_combined/
 source /opt/ros/humble/setup.bash
 source install/local_setup.bash
 ros2 launch px4_ros_com sensor_combined_listener.launch.py
+```
 
-## TERMINAL KEEMPAT (Opsional, untuk buka QGroundControl)
+### TERMINAL KEEMPAT (Opsional, untuk buka QGroundControl)
+
+Menjalankan QGroundControl
+```
 cd ~/QgroundControl
 ./QGroundControl.AppImage
+```
