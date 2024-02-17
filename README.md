@@ -1,3 +1,8 @@
+# Clone repository ini
+```
+git clone https://github.com/rizkyrivaldi/ws_direct_control.git --recursive
+```
+
 # Persiapan OS
 
 ## Fresh install ubuntu 22.04
@@ -84,7 +89,11 @@ sudo make install
 ## Install dependency PX4-Autopilot dari githubnya
 ```
 cd ~/
-git clone https://github.com/PX4/PX4-Autopilot.git --recursive
+git clone https://github.com/PX4/PX4-Autopilot.git
+cd PX4-Autopilot
+git checkout release/1.14
+git submodule update --init --recursive --remote
+cd ..
 bash ./PX4-Autopilot/Tools/setup/ubuntu.sh
 ```
 
@@ -178,4 +187,10 @@ Menjalankan QGroundControl
 ```
 cd ~/QgroundControl
 ./QGroundControl.AppImage
+```
+
+# MISC
+Path ke dds topics
+```
+PX4-Autopilot/src/modules/uxrce_dds_client/dds_topics.yaml
 ```
