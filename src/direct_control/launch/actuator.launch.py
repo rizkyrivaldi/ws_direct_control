@@ -14,7 +14,7 @@ def generate_launch_description():
 
     test_actuator = Node(
         package='direct_control',
-        executable='asdasd',
+        executable='actuator',
         output='screen',
         shell=True,
     )

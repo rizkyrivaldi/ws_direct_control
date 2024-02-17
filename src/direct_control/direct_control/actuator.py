@@ -11,6 +11,7 @@ from px4_msgs.msg import VehicleStatus
 from px4_msgs.msg import VehicleCommand
 from px4_msgs.msg import VehicleRatesSetpoint
 from px4_msgs.msg import VehicleAttitudeSetpoint
+from px4_msgs.msg import VehicleControlMode
 
 class OffboardControl(Node):
     def __init__(self):
@@ -27,6 +28,9 @@ class OffboardControl(Node):
         # Init Subscriber and Publisher
         self.__init_publisher()
         self.__init_subscriber()
+
+        # Init message variables
+        self.vehicle_control_mode = VehicleControlMode()
     
         # Debugging
         self.counter = 0
@@ -48,27 +52,46 @@ class OffboardControl(Node):
 
     """ Subscriber initialization """
     def __init_subscriber(self):
+        self.status_sub = self.create_subscription(VehicleControlMode, '/fmu/out/vehicle_control_mode', self.vehicle_control_mode_callback, self.qos_profile)
         # self.status_sub = self.create_subscription(VehicleStatus, '/fmu/out/vehicle_status', self.vehicle_status_callback, self.qos_profile)
-        pass
 
     """ Publisher initialization """
     def __init_publisher(self):
         self.vehicle_command_pub = self.create_publisher(VehicleCommand, '/fmu/in/vehicle_command', self.qos_profile)
+        self.offboard_mode_pub = self.create_publisher(OffboardControlMode, '/fmu/in/offboard_control_mode', self.qos_profile)
         # self.publisher_offboard_mode = self.create_publisher(OffboardControlMode, '/fmu/in/offboard_control_mode', self.os_profile)
         # self.publisher_trajectory = self.create_publisher(TrajectorySetpoint, '/fmu/in/trajectory_setpoint', self.qos_profile)
         # self.publisher_attitude = self.create_publisher(VehicleAttitudeSetpoint, '/fmu/in/vehicle_attitude_setpoint', self.qos_profile)
 
+    """ Flag Subscriptions (vehicle control mode)"""
+    def vehicle_control_mode_callback(self, msg):
+        self.vehicle_control_mode = msg
+
     # GLOBAL FUNCTION
     """ Send vehicle commands """
-    def VehicleCommand(self, command, param1=0.0, param2=0.0, param3=0.0, param4=0.0, param5=0.0, param6=0.0, param7=0.0):
+    def VehicleCommand(self, command, param1=None, param2=None, param3=None, param4=None, param5=None, param6=None, param7=None):
         comm = VehicleCommand()
-        comm.param1 = param1
-        comm.param2 = param2
-        comm.param3 = param3
-        comm.param4 = param4
-        comm.param5 = param5
-        comm.param6 = param6
-        comm.param7 = param7
+        if not param1 == None:
+            comm.param1 = param1
+
+        if not param2 == None:
+            comm.param2 = param2
+
+        if not param3 == None:
+            comm.param3 = param3
+
+        if not param4 == None:
+            comm.param4 = param4
+        
+        if not param5 == None:
+            comm.param5 = param5
+
+        if not param6 == None:
+            comm.param6 = param6
+
+        if not param7 == None:
+            comm.param7 = param7
+
         comm.command = command
         comm.target_system = 1
         comm.target_component = 1
@@ -89,17 +112,51 @@ class OffboardControl(Node):
         self.VehicleCommand(command = VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1 = 0.0)
         self.get_logger().info('Disarm command sent')
 
+    """ Send offboard mode to vehicle """
+    def offboard(self):
+        self.VehicleCommand(command = VehicleCommand.VEHICLE_CMD_DO_SET_MODE, param1 = 1.0, param2 = 6.0)
+        self.get_logger().info('offboard command sent')
+
+    """ Send offboard control mode """
+    def offboard_mode(self):
+        offboard_msg = OffboardControlMode()
+        offboard_msg.timestamp = int(Clock().now().nanoseconds / 1000)
+        offboard_msg.position = False
+        offboard_msg.velocity = False
+        offboard_msg.acceleration = False
+        offboard_msg.attitude = False
+        offboard_msg.body_rate = True
+        self.offboard_mode_pub.publish(offboard_msg)
+        self.get_logger().info('Offboard mode signal sent')
+
     """ Send actuator control directly """
     def actuator_output(self, roll = 0.0, pitch = 0.0, yaw = 0.0, thrust = 0.0):
         self.VehicleCommand(command = VehicleCommand.VEHICLE_CMD_DO_SET_ACTUATOR, param1 = roll, param2 = pitch, param3 = yaw, param4 = thrust)
         self.get_logger().info(f'Actuator sent: {roll} {pitch} {yaw} {thrust}')
 
+    """ Send output directly to channel """
+    def channel_output(self, channel, pwm):
+        self.VehicleCommand(command = VehicleCommand.VEHICLE_CMD_DO_REPEAT_SERVO, param1 = channel, param2 = pwm, param3 = 2.0, param4 = 10.0)
+        self.get_logger().info(f'PWM sent: (channel {channel}: {pwm})')
+
     def main_loop(self):
-        if not self.armed:
-            self.arm()
+        # if not self.vehicle_control_mode.flag_control_offboard_enabled:
+            # self.offboard_mode()
+            # self.offboard()
+        # if not self.vehicle_control_mode.flag_armed:
+        #     self.arm()
+
+        # self.channel_output(0.0, 1500.0)
+        # self.channel_output(1.0, 1500.0)
+        # self.channel_output(2.0, 1500.0)
+        # self.channel_output(3.0, 1500.0)
+
+        # else:
         self.counter += 1
         self.get_logger().info(f'Counter: {self.counter}')
-        self.actuator_output(thrust = 1.0)
+        self.actuator_output(roll = 0.0, pitch = 0.0, yaw = 0.0, thrust = 0.0)
+
+            
 
 
 def main():
