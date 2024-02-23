@@ -16,8 +16,8 @@ from px4_msgs.msg import VehicleControlMode
 class OffboardControl(Node):
     def __init__(self):
         # Init node
-        super().__init__('actuator_test_output')
-        self.get_logger().info('Node Initialized')
+        super().__init__('actuator_output')
+        self.get_logger().info('Node actuator_output Initialized')
 
         # Init variables
         self.armed = False

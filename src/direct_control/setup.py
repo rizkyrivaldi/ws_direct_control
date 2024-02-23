@@ -24,6 +24,8 @@ setup(
     entry_points={
         'console_scripts': [
                 'actuator = direct_control.actuator:main',
+                'sensor = direct_control.sensor:main',
+
                 'asdasd = direct_control.asdasd:main',
                 'motor = direct_control.motor:main',
         ],

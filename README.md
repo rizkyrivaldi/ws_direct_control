@@ -194,3 +194,16 @@ Path ke dds topics
 ```
 PX4-Autopilot/src/modules/uxrce_dds_client/dds_topics.yaml
 ```
+
+Topic yang ditambahkan
+```
+  - topic: /fmu/out/actuator_controls_status_0
+    type: px4_msgs::msg::ActuatorControlsStatus
+
+  - topic: /fmu/out/actuator_outputs_sim
+    type: px4_msgs::msg::ActuatorOutputs
+
+  - topic: /fmu/out/actuator_outputs
+    type: px4_msgs::msg::ActuatorOutputs
+```
+
