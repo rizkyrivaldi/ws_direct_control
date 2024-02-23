@@ -197,6 +197,9 @@ PX4-Autopilot/src/modules/uxrce_dds_client/dds_topics.yaml
 
 Topic yang ditambahkan
 ```
+  - topic: /fmu/out/manual_control_setpoint
+    type: px4_msgs::msg::ManualControlSetpoint
+
   - topic: /fmu/out/actuator_controls_status_0
     type: px4_msgs::msg::ActuatorControlsStatus
 
