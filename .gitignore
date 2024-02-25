@@ -16,3 +16,8 @@ log/*
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
