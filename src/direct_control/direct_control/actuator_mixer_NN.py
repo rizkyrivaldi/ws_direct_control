@@ -17,6 +17,8 @@ from px4_msgs.msg import ManualControlSetpoint
 from px4_msgs.msg import VehicleTorqueSetpoint
 from px4_msgs.msg import VehicleThrustSetpoint
 
+from utils.NN import BPNN
+
 class OffboardControl(Node):
     def __init__(self):
         # Init node
@@ -43,10 +45,13 @@ class OffboardControl(Node):
 
         # Init message variables
         self.vehicle_control_mode = VehicleControlMode()
-        self.actuator_control_status = ActuatorControlsStatus()
+        self.actuator_controls_status = ActuatorControlsStatus()
         self.manual_control_setpoint = ManualControlSetpoint()
         self.vehicle_torque_setpoint = VehicleTorqueSetpoint()
         self.vehicle_thrust_setpoint = VehicleThrustSetpoint()
+
+        # Init BPNN model
+        self.mixer = BPNN(weight = "model/manual_mixer_v2.pickle")
     
         # Debugging
         self.counter = 0
@@ -164,11 +169,6 @@ class OffboardControl(Node):
         # Pecah attitude ke roll pitch yaw
         roll, pitch, yaw = attitude
 
-        # self.motor_pwm[0] = throttle - pitch + roll + yaw
-        # self.motor_pwm[1] = throttle + pitch - roll + yaw
-        # self.motor_pwm[2] = throttle - pitch - roll - yaw
-        # self.motor_pwm[3] = throttle + pitch + roll - yaw
-
         self.motor_pwm[0] = thrust - roll + pitch + yaw
         self.motor_pwm[1] = thrust + roll - pitch + yaw# * 18.0/25.0
         self.motor_pwm[2] = thrust + roll + pitch - yaw
@@ -185,6 +185,26 @@ class OffboardControl(Node):
             # old_range = (1 - 0)
             # new_range = (1 - (-1))
             # self.motor_pwm[i] = (((self.motor_pwm[i] - 0.0) * new_range) / old_range) + (-1.0)
+
+    def actuator_to_pwm_nn(self):
+        self.motor_pwm = self.mixer.feedForward(
+            [self.vehicle_torque_setpoint.xyz[0],
+            self.vehicle_torque_setpoint.xyz[1],
+            self.vehicle_torque_setpoint.xyz[2],
+            -self.vehicle_thrust_setpoint.xyz[2],
+            self.actuator_controls_status.control_power[0],
+            self.actuator_controls_status.control_power[1],
+            self.actuator_controls_status.control_power[2]]
+        )
+
+        # Adjust to fit the [-1, 1] actuator as [0, 2000]
+        old_range = (1 - 0)
+        new_range = (1 - (-1))
+        self.motor_pwm = (((self.motor_pwm - 0.0) * new_range) / old_range) + (-1.0)
+        for n in range(len(self.motor_pwm)):
+            if self.motor_pwm[n] < 0.1:
+                self.motor_pwm[n] = 0.1
+        
 
     """ Send vehicle commands """
     def VehicleCommand(self, command, param1 = None, param2 = None, param3 = None, param4 = None, param5 = None, param6 = None, param7 = None):
@@ -246,8 +266,9 @@ class OffboardControl(Node):
         # else:
         # self.actuator_to_pwm(self.actuator_control_status.control_power, self.thrust_control)
         # self.actuator_to_pwm(self.vehicle_torque_setpoint.xyz, -self.vehicle_thrust_setpoint.xyz[2])
-        self.actuator_to_pwm(self.vehicle_torque_setpoint.xyz, self.thrust_control)
+        # self.actuator_to_pwm(self.vehicle_torque_setpoint.xyz, self.thrust_control)
         # self.actuator_to_pwm(self.vehicle_torque_setpoint.xyz, self.manual_control_setpoint.throttle) 
+        self.actuator_to_pwm_nn()
         self.actuator_output(motor1 = self.motor_pwm[0], motor2 = self.motor_pwm[1], motor3 = self.motor_pwm[2], motor4 = self.motor_pwm[3])
 
 def main():
