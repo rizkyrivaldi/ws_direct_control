@@ -28,6 +28,7 @@ class OffboardControl(Node):
         # Init variables
         self.armed = False
         self.motor_pwm = [0, 0, 0, 0]
+        self.airframe = [0.15, 0.25, -0.15, -0.19, 0.15, -0.25, -0.15, 0.19]
 
         # Init joystick control variables
         self.thrust_control = 0.5
@@ -51,7 +52,8 @@ class OffboardControl(Node):
         self.vehicle_thrust_setpoint = VehicleThrustSetpoint()
 
         # Init BPNN model
-        self.mixer = BPNN(weight = "model/manual_mixer_v2.pickle")
+        # self.mixer_v2 = BPNN(weight = "model/manual_mixer_v2.pickle")
+        self.mixer_v3 = BPNN(weight = "model/manual_mixer_v3.pickle")
     
         # Debugging
         self.counter = 0
@@ -187,15 +189,25 @@ class OffboardControl(Node):
             # self.motor_pwm[i] = (((self.motor_pwm[i] - 0.0) * new_range) / old_range) + (-1.0)
 
     def actuator_to_pwm_nn(self):
-        self.motor_pwm = self.mixer.feedForward(
-            [self.vehicle_torque_setpoint.xyz[0],
+        # self.motor_pwm = self.mixer_v2.feedForward(
+        #     [self.vehicle_torque_setpoint.xyz[0],
+        #     self.vehicle_torque_setpoint.xyz[1],
+        #     self.vehicle_torque_setpoint.xyz[2],
+        #     -self.vehicle_thrust_setpoint.xyz[2],
+        #     self.actuator_controls_status.control_power[0],
+        #     self.actuator_controls_status.control_power[1],
+        #     self.actuator_controls_status.control_power[2]]
+        # )
+
+        input_vector = [
+            self.vehicle_torque_setpoint.xyz[0],
             self.vehicle_torque_setpoint.xyz[1],
             self.vehicle_torque_setpoint.xyz[2],
-            -self.vehicle_thrust_setpoint.xyz[2],
-            self.actuator_controls_status.control_power[0],
-            self.actuator_controls_status.control_power[1],
-            self.actuator_controls_status.control_power[2]]
-        )
+            -self.vehicle_thrust_setpoint.xyz[2]
+        ]
+        input_vector.extend(self.airframe)
+
+        self.motor_pwm = self.mixer_v3.feedForward(input_vector)
 
         # Adjust to fit the [-1, 1] actuator as [0, 2000]
         old_range = (1 - 0)
