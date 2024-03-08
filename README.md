@@ -206,7 +206,16 @@ Topic yang ditambahkan
   - topic: /fmu/out/actuator_outputs_sim
     type: px4_msgs::msg::ActuatorOutputs
 
-  - topic: /fmu/out/actuator_outputs
+  - topic: /fmu/out/actuator_outputs # PWM output 0 - 2000
     type: px4_msgs::msg::ActuatorOutputs
+
+  - topic: /fmu/out/vehicle_torque_setpoint # control output u1 u2 u3 (roll, pitch, yaw)
+    type: px4_msgs::msg::VehicleTorqueSetpoint
+
+  - topic: /fmu/out/vehicle_thrust_setpoint # thrust control output u4
+    type: px4_msgs::msg::VehicleThrustSetpoint
+
+  - topic: /fmu/out/actuator_motors
+    type: px4_msgs::msg::ActuatorMotors
 ```
 
