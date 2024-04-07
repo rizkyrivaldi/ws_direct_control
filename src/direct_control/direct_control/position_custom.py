@@ -4,7 +4,8 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.clock import Clock
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+# from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
 from px4_msgs.msg import OffboardControlMode, TrajectorySetpoint, VehicleCommand, VehicleLocalPosition, VehicleStatus
 
 # Math imports
@@ -13,8 +14,8 @@ import numpy as np
 class OffboardControl(Node):
     def __init__(self):
         # Init node
-        super().__init__('Position Flight')
-        self.get_logger().info('Node Position Flight Initialized')
+        super().__init__('position_mode')
+        self.get_logger().info('Node position_mode Initialized')
 
         # Init qos_profile
         self.__init_qos_profile()
@@ -29,12 +30,27 @@ class OffboardControl(Node):
 
         # Init position setpoints
         self.current_mission = 0
-        self.takeoff_height = 5.0
+        self.takeoff_height = 8.0
         self.position_setpoint = {
-            "takeoff" : [0.0, 0.0, self.takeoff_height]
-            "point_a" : [5.0, 0.0, self.takeoff_height]
-            "point_b" : [5.0, 5.0, self.takeoff_height]
-            "point_c" : [0.0, 5.0, self.takeoff_height]
+            # Dataset A
+            # "takeoff" : [0.0, 0.0, self.takeoff_height],
+            # "point_a" : [10.0, 0.0, self.takeoff_height],
+            # "point_b" : [10.0, 10.0, self.takeoff_height],
+            # "point_c" : [0.0, 10.0, self.takeoff_height],
+            # "point_d" : [0.0, 0.0, self.takeoff_height]
+
+            # Dataset B
+            # "takeoff" : [0.0, 0.0, self.takeoff_height],
+            # "point_a" : [7.0, 0.0, self.takeoff_height],
+            # "point_b" : [7.0, 7.0, self.takeoff_height],
+            # "point_c" : [0.0, 7.0, self.takeoff_height],
+            # "point_d" : [0.0, 0.0, self.takeoff_height]
+
+            # Dataset C
+            "takeoff" : [0.0, 0.0, self.takeoff_height],
+            "point_a" : [8.0, 0.0, self.takeoff_height],
+            "point_b" : [8.0, 8.0, self.takeoff_height],
+            "point_c" : [0.0, 8.0, self.takeoff_height],
             "point_d" : [0.0, 0.0, self.takeoff_height]
         }
 
@@ -90,7 +106,7 @@ class OffboardControl(Node):
         self.vehicle_local_position = msg
 
     def vehicle_status_callback(self, msg):
-        self.vehicle_status_callback = msg
+        self.vehicle_status = msg
 
     # Publish Functions
     def publish_vehicle_command(self, command, param1 = None, param2 = None, param3 = None, param4 = None, param5 = None, param6 = None, param7 = None):
@@ -234,11 +250,24 @@ class OffboardControl(Node):
                 self.current_mission += 1
 
             # Landing
-            if current_mission == 5:
+            if self.current_mission == 5:
                 self.land()
                 exit(0)
 
+def main(args=None) -> None:
+    print('Starting offboard control node...')
+    rclpy.init(args=args)
+    offboard_control = OffboardControl()
+    rclpy.spin(offboard_control)
+    offboard_control.destroy_node()
+    rclpy.shutdown()
 
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as e:
+        print(e)
         
 
 

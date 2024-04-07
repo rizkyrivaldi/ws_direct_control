@@ -10,3 +10,6 @@ t2_solo:
 
 t3:
 	@~/QGroundControl/QGroundControl.AppImage
+
+s: #SHELL:=/bin/bash
+	@bash -c "source install/setup.bash"
