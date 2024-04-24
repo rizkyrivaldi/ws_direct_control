@@ -51,7 +51,7 @@ class OffboardControl(Node):
         self.vehicle_thrust_setpoint = VehicleThrustSetpoint()
 
         # Init BPNN model
-        self.mixer_v4 = BPNN(weight = "model/mixer_v4.1_best_weight.pickle")
+        self.mixer_v4 = BPNN(weight = "model/mixer_v4.3_best_weight.pickle")
     
         # Debugging
         self.counter = 0
