@@ -30,15 +30,15 @@ class OffboardControl(Node):
 
         # Init position setpoints
         self.current_mission = 0
-        self.takeoff_height = -8.0
+        self.takeoff_height = -5.0
         self.position_setpoint = {
             
             "takeoff" : [0.0, 0.0, self.takeoff_height, 0.0],
-            "point_a" : [8.0, 0.0, self.takeoff_height, 0.0],
-            "point_b" : [8.0, -8.0, self.takeoff_height, -90.0],
-            "point_c" : [0.0, -8.0, self.takeoff_height, -180.0],
-            "point_d" : [0.0, -16.0, self.takeoff_height, -90.0],
-            "point_e" : [8.0, -16.0, self.takeoff_height, 0.0]
+            "point_a" : [10.0, 0.0, self.takeoff_height, 0.0],
+            "point_b" : [10.0, -10.0, self.takeoff_height, -90.0],
+            "point_c" : [0.0, -10.0, self.takeoff_height, -180.0],
+            "point_d" : [0.0, -20.0, self.takeoff_height, -90.0],
+            "point_e" : [10.0, -20.0, self.takeoff_height, 0.0]
         }
 
         # RUN THE LOOP
@@ -242,7 +242,7 @@ class OffboardControl(Node):
                 self.current_mission += 1
 
             # Go to point E
-            if self.vehicle_local_position.x > self.position_setpoint["point_e"][0] and self.current_mission == 5:
+            if self.vehicle_local_position.x < self.position_setpoint["point_e"][0] and self.current_mission == 5:
                 self.publish_position_setpoint(
                     self.position_setpoint["point_e"][0],
                     self.position_setpoint["point_e"][1],
