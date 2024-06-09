@@ -197,9 +197,9 @@ class OffboardControl(Node):
         self.motor_pwm = self.mixer_v4.feedForward(input_vector)
 
         # Adjust to fit the [-1, 1] actuator as [0, 2000]
-        old_range = (1 - 0)
-        new_range = (1 - (-1))
-        self.motor_pwm = (((self.motor_pwm - 0.0) * new_range) / old_range) + (-1.0)
+        # old_range = (1 - 0)
+        # new_range = (1 - (-1))
+        # self.motor_pwm = (((self.motor_pwm - 0.0) * new_range) / old_range) + (-1.0)
         for n in range(len(self.motor_pwm)):
             if self.motor_pwm[n] < 0.1:
                 self.motor_pwm[n] = 0.1

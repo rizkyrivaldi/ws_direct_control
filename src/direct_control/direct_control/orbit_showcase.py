@@ -30,10 +30,10 @@ class OffboardControl(Node):
 
         # Init position setpoints
         self.circular_iteration = 0
-        self.max_iteration = 200
+        self.max_iteration = 800
         self.full_rotation = 4
         self.takeoff_height = -5.0
-        self.setpoint_max_distance = 0.2
+        self.setpoint_max_distance = 1.0
 
         ## Create helix function
         """
@@ -69,7 +69,6 @@ class OffboardControl(Node):
         
 
         self.line_iteration = 15
-        # self.position_setpoint = np.array([[0.0, 0.0, 0.0, 90.0], [0, 0, self.takeoff_height, 180.0]])
         
         for i in range(self.line_iteration):
             self.position_setpoint = np.append(
@@ -95,6 +94,38 @@ class OffboardControl(Node):
                 ]],
                 axis = 0
             )
+
+        ### Line Position Setpoints To Descending Helix
+        self.helix_distance = 10.0 # Distance between first helix outer circle to second helix outer circle
+        for i in range(self.line_iteration):
+            self.position_setpoint = np.append(
+                self.position_setpoint,
+                [[
+                    self.r*np.cos(0) + self.helix_distance/self.line_iteration*i,
+                    self.r*np.sin(0)/self.line_iteration*i,
+                    self.max_height,
+                    0.0
+                ]],
+                axis = 0
+            )
+
+        ### Helix Descend Setpoints
+        self.second_r_max = 5.0
+        self.second_r_min = 1.0
+        self.second_helix_center = [self.r*np.cos(0) + self.helix_distance + self.second_r_max, self.r*np.sin(0), self.max_height]
+
+        for i in range(self.max_iteration):
+            self.position_setpoint = np.append(
+                self.position_setpoint,
+                [[
+                    self.second_helix_center[0] + -(self.second_r_max - (self.second_r_max - self.second_r_min)/self.max_iteration*i)*np.cos(self.full_rotation*2*np.pi/self.max_iteration*i),
+                    self.second_helix_center[1] + -(self.second_r_max - (self.second_r_max - self.second_r_min)/self.max_iteration*i)*np.sin(self.full_rotation*2*np.pi/self.max_iteration*i),
+                    self.second_helix_center[2] - self.a*i,
+                    0.0 + np.rad2deg(self.full_rotation*2*np.pi/self.max_iteration*i)
+                ]],
+                axis = 0
+            )
+
 
         # RUN THE LOOP
         self.timer_period = 0.01 # Seconds
