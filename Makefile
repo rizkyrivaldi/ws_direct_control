@@ -5,6 +5,9 @@ t1:
 t2:
 	@make -C ~/PX4-Autopilot px4_sitl_default gazebo-classic
 
+t2_baylands:
+	@make -C ~/PX4-Autopilot px4_sitl_default gazebo-classic_iris__baylands
+
 t2_solo:
 	@make -C ~/PX4-Autopilot px4_sitl gazebo-classic_solo
 
