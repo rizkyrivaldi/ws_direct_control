@@ -1,8 +1,3 @@
-# Clone repository ini
-```
-git clone https://github.com/rizkyrivaldi/ws_direct_control.git --recursive
-```
-
 # Persiapan OS
 
 ## Fresh install ubuntu 22.04
@@ -35,6 +30,15 @@ sudo apt upgrade
 ```
 sudo apt install python3-pip
 sudo apt install git
+```
+
+# Clone repository ini
+```
+cd ~/
+git clone https://github.com/rizkyrivaldi/ws_direct_control.git --recursive
+git submodule update --init --recursive --remote
+git submodule sync --recursive
+git submodule update --init --recursive
 ```
 
 # Instalasi Aplikasi Yang Dibutuhkan
@@ -70,6 +74,16 @@ sudo apt upgrade
 ```
 sudo apt install ros-humble-desktop-full
 pip install --user -U empy pyros-genmsg setuptools
+```
+
+Menambahkan ros ke dalam bashrc
+
+```
+nano ~/.bashrc
+```
+Masukkan potongan program berikut ke line terakhir bashrc
+```
+source /opt/ros/humble/setup.bash
 ```
 
 ## Setup Micro XRCE-DDS Agent&Client
@@ -116,6 +130,13 @@ sudo apt-get install libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-bad g
 DONT_RUN=1 make px4_sitl_default gazebo
 ```
 
+## Menonaktifkan Lockstep Simulation
+```
+cd ~/PX4-Autopilot
+make px4_sitl_default boardconfig
+```
+Toolchain --> Force Disable Lockstep Simulation
+
 ## Install Colcon (seperti cmake)
 Source: [colcon documentation](https://colcon.readthedocs.io/en/released/user/installation.html)
 
@@ -152,7 +173,73 @@ wget https://d176tv9ibo4jno.cloudfront.net/latest/QGroundControl.AppImage
 chmod +x ./QGroundControl.AppImage
 ```
 
-# RUN simulation dengan listen ke topic sensor combined
+# Menjalankan Simulasi tanpa menggunakan BPNN
+### Terminal Pertama
+```
+sudo ldconfig /usr/local/lib/
+MicroXRCEAgent udp4 -p 8888 # Start agent
+```
+
+### Terminal Kedua
+```
+cd ~/PX4-Autopilot
+make px4_sitl_default gazebo-classic
+```
+
+### Terminal Ketiga
+```
+cd ~/QgroundControl
+./QGroundControl.AppImage
+```
+Pastikan bahwa aktuator menggunakan motor 1, motor 2, motor 3, dan motor 4
+Simulasi sudah dapat digerakkan menggunakan joystick
+
+### Terminal Keempat (Apabila ingin menggunakan pergerakan helix)
+```
+cd ~/ws_direct_control
+source ./install/setup.bash
+cd src/direct_control/direct_control/
+python3 orbit.py
+```
+
+# Menjalankan Simulasi dengan BPNN
+### Terminal Pertama
+```
+sudo ldconfig /usr/local/lib/
+MicroXRCEAgent udp4 -p 8888 # Start agent
+```
+
+### Terminal Kedua
+```
+cd ~/PX4-Autopilot
+make px4_sitl_default gazebo-classic
+```
+
+### Terminal Ketiga
+```
+cd ~/QgroundControl
+./QGroundControl.AppImage
+```
+Pastikan bahwa aktuator menggunakan Offboard Actuator Set 1, Offboard Actuator Set 2, Offboard Actuator Set 3, dan Offboard Actuator Set 4
+
+### Terminal Keempat
+```
+cd ~/ws_direct_control
+source ./install/setup.bash
+cd src/direct_control/direct_control/
+python3 actuator_mixer_NN_v4.py
+```
+Simulasi sudah dapat digerakkan menggunakan joystick
+
+### Terminal Kelima (Apabila ingin menggunakan pergerakan helix)
+```
+cd ~/ws_direct_control
+source ./install/setup.bash
+cd src/direct_control/direct_control/
+python3 orbit.py
+```
+
+# Menjalankan simulasi dengan listen ke topic sensor combined
 ### TERMINAL PERTAMA
 
 Menjalankan MicroXRCEAgent sebagai jembatan antara px4 dengan ros2
