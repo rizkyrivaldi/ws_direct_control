@@ -121,6 +121,36 @@ sudo apt install aptitude
 sudo aptitude install gazebo libgazebo11 libgazebo-dev
 ```
 
+## Memasukkan topic yang diperlukan untuk input dan output control mixer
+Mengubah isi dari file .yaml berikut:
+```
+nano ~/PX4-Autopilot/src/modules/uxrce_dds_client/dds_topics.yaml
+```
+
+Menambahkan isi berupa topik uORB yang ingin dipublikasi ke ROS 2 dengan cara menambahkan program berikut ke dalam bagian publication:
+```
+  - topic: /fmu/out/manual_control_setpoint
+    type: px4_msgs::msg::ManualControlSetpoint
+
+  - topic: /fmu/out/actuator_controls_status_0
+    type: px4_msgs::msg::ActuatorControlsStatus
+
+  - topic: /fmu/out/actuator_outputs_sim
+    type: px4_msgs::msg::ActuatorOutputs
+
+  - topic: /fmu/out/actuator_outputs # PWM output 0 - 2000
+    type: px4_msgs::msg::ActuatorOutputs
+
+  - topic: /fmu/out/vehicle_torque_setpoint # control output u1 u2 u3 (roll, pitch, yaw)
+    type: px4_msgs::msg::VehicleTorqueSetpoint
+
+  - topic: /fmu/out/vehicle_thrust_setpoint # thrust control output u4
+    type: px4_msgs::msg::VehicleThrustSetpoint
+
+  - topic: /fmu/out/actuator_motors
+    type: px4_msgs::msg::ActuatorMotors
+```
+
 ## Compile PX4 Autopilot
 ```
 cd ~/PX4-Autopilot
@@ -145,6 +175,12 @@ sudo sh -c 'echo "deb [arch=amd64,arm64] http://repo.ros2.org/ubuntu/main `lsb_r
 curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 sudo apt update
 sudo apt install python3-colcon-common-extensions
+```
+
+## Compile ws_direct_control
+```
+cd ~/ws_direct_control
+colcon build
 ```
 
 ## Setup contoh listener ke topic uORB
