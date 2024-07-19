@@ -127,7 +127,7 @@ cd ~/PX4-Autopilot
 pip uninstall em
 pip uninstall empy
 sudo apt-get install libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly -y
-DONT_RUN=1 make px4_sitl_default gazebo
+DONT_RUN=1 make px4_sitl_default gazebo-classic
 ```
 
 ## Menonaktifkan Lockstep Simulation
